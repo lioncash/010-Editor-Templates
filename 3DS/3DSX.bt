@@ -1,0 +1,72 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author:   Lioncash
+// Revision: 1.0
+// Purpose:  Defines the header structure for 3DSX files.
+//--------------------------------------
+
+#include "SMDH.bt"
+
+// TODO: Potentially handle the RomFS, if it's encountered.
+
+struct ThreeDSX
+{
+    LittleEndian();
+
+    struct Header
+    {
+        char   magic[4];
+        uint16 header_size;
+        uint16 relocation_header_size;
+        uint32 format_version;
+        uint32 flags;
+        uint32 code_segment_size;
+        uint32 rodata_segment_size;
+        uint32 data_segment_size;
+        uint32 bss_segment_size;
+    };
+
+    struct ExtendedHeader
+    {
+        uint32 smdh_offset;
+        uint32 smdh_size;
+        uint32 romfs_offset;
+    };
+
+    struct RelocationHeader
+    {
+        uint32 num_absolute_relocations;
+        uint32 num_relative_relocations;
+    };
+
+    struct Relocation
+    {
+        uint16 num_words_to_skip;
+        uint16 num_words_to_patch;
+    };
+
+    Header header;
+
+    if (header.header_size > 32)
+    {
+        ExtendedHeader extended_header;
+    }
+
+    RelocationHeader code_header;
+    RelocationHeader rodata_header;
+    RelocationHeader data_header;
+
+    ubyte code_segment[header.code_segment_size];
+    ubyte rodata_segment[header.rodata_segment_size];
+    ubyte data_segment[header.data_segment_size - header.bss_segment_size];
+
+    Relocation code_relocation_table[code_header.num_absolute_relocations + code_header.num_relative_relocations];
+    Relocation rodata_relocation_table[rodata_header.num_absolute_relocations + rodata_header.num_relative_relocations];
+    Relocation data_relocation_table[data_header.num_absolute_relocations + data_header.num_relative_relocations];
+
+    if (exists(extended_header) && extended_header.smdh_size > 0)
+    {
+        SMDH smdh;
+    }
+} threedsx;
