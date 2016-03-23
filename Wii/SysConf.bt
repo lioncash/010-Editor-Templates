@@ -1,0 +1,68 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the structure of the Wii SysConf binary data
+//--------------------------------------
+
+struct SysConf
+{
+    BigEndian();
+
+    struct Header
+    {
+        char   magic[4];
+        uint16 num_entries;
+        uint16 entry_offsets[header.num_entries + 1];
+    };
+
+    struct Entry
+    {
+        enum <ubyte> Type
+        {
+            Unknown    = 0,
+            BigArray   = 1,
+            SmallArray = 2,
+            Byte       = 3,
+            Short      = 4,
+            Long       = 5,
+            LongLong   = 6,
+            Boolean    = 7
+        };
+
+        Type type         : 3;
+        ubyte name_length : 5;
+        char name[name_length + 1];
+
+        switch (type) {
+        case BigArray:
+            uint16 length;
+            ubyte data[length + 1];
+            break;
+        case SmallArray:
+            ubyte length;
+            ubyte data[length + 1];
+            break;
+        case Byte:
+            ubyte value;
+            break;
+        case Short:
+            uint16 value;
+            break;
+        case Long:
+            uint32 value;
+            break;
+        case LongLong:
+            uint64 value;
+            break;
+        case Boolean:
+            ubyte value;
+            break;
+        }
+    };
+
+    Header header;
+    Entry entries[header.num_entries + 1] <optimize=false>;
+
+} sysconf;
