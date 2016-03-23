@@ -1,0 +1,28 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the header of the DOL executables
+//--------------------------------------
+
+struct DOLHeader
+{
+    BigEndian();
+
+    uint32 text_offsets[7];
+    uint32 data_offsets[11];
+
+    uint32 text_loading_addresses[7];
+    uint32 data_loading_addresses[11];
+
+    uint32 text_section_sizes[7];
+    uint32 data_section_sizes[11];
+
+    uint32 bss_address;
+    uint32 bss_size;
+
+    uint32 entry_point;
+
+    char padding[0x1B];
+} header;
