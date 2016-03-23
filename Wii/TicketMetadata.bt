@@ -1,0 +1,58 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the structure of the title metadata (TMD) binaries.
+//--------------------------------------
+
+struct TMD
+{
+    BigEndian();
+
+    struct ContentEntry
+    {
+        enum <uint16> Type
+        {
+            Normal = 0x0001,
+            Shared = 0x8001
+        };
+
+        uint32 content_id;
+        uint16 index;
+        Type   type;
+        uint64 size;
+        ubyte  sha1_hash[20];
+    };
+
+    enum <uint32> SignatureType
+    {
+        RSA_2048 = 0x00010001,
+        RSA_4096 = 0x00010000
+    };
+
+    SignatureType signature_type;
+    ubyte signature[256];
+
+    ubyte padding[60];
+
+    char  issuer[64];
+    ubyte version;
+    ubyte ca_crl_version;
+    ubyte signer_crl_version;
+
+    ubyte padding2;
+
+    uint64 system_version;
+    uint64 title_id;
+    uint32 title_type;
+    uint16 group_id;
+    ubyte  reserved[62];
+    uint32 access_rights;
+    uint16 title_version;
+    uint16 num_contents;
+    uint16 boot_index;
+    uint16 padding3;
+
+    ContentEntry content_entries[num_contents];
+} tmd;
