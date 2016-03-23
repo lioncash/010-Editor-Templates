@@ -1,0 +1,41 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// File:
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the data structure for SMDH icon files.
+//--------------------------------------
+
+struct SMDH
+{
+    LittleEndian();
+
+    struct ApplicationTitle
+    {
+        wchar_t short_description[0x40];
+        wchar_t long_description[0x80];
+        wchar_t publisher[0x40];
+    };
+    struct ApplicationSettings
+    {  
+        ubyte  game_ratings[0x10];
+        uint32 region_lockout <format=binary>;
+        uint32 matchmaker_id;
+        uint64 matchmaker_bit_id;
+        uint32 flags <format=binary>;
+        ubyte  eula_version_minor;
+        ubyte  eula_version_major;
+        float  optimal_animation_default_frame;
+        uint32 cec_id <comment="CEC (Streetpass) ID">;     
+    };
+
+    char   magic[4];
+    uint16 version;
+    uint16 reserved1 <hidden = true>;
+    ApplicationTitle titles[16];
+    ApplicationSettings settings;
+    char reserved2[8] <hidden = true>;
+    ubyte small_icon[0x480]  <comment="Small 24x24 icon. Shown when the app is paused.">;
+    ubyte large_icon[0x1200] <comment="Large 48x48 icon. Main icon shown elsewhere.">;
+};
