@@ -1,0 +1,92 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the data structure for BRSTM sound files.
+//--------------------------------------
+
+struct BRSTM
+{
+    struct Header
+    {
+        char   magic[4];
+        uint16 byte_order_mark <format = hex>;
+
+        if (byte_order_mark == 0xFEFF)
+            BigEndian();
+        else if (byte_order_mark == 0xFFEF)
+            LittleEndian();
+        else
+            Warning("Invalid byte-order mark.");
+
+        uint16 unknown1            <hidden = true>;
+        uint32 length_of_file      <comment = "Length of the file in bytes">;
+        uint16 length_of_header    <comment = "Length of the header in bytes">;
+        uint16 unknown2            <hidden = true>;
+        uint32 head_section_offset;
+        uint32 head_section_size   <comment = "HEAD section size in bytes">;
+        uint32 adpc_section_offset;
+        uint32 adpc_section_size   <comment = "ADPC section size in bytes">;
+        uint32 data_section_offset;
+        uint32 data_section_size   <comment = "DATA section size in bytes">;
+        char   unknown3[24]        <hidden = true>;
+    };
+
+    struct HEADSection
+    {
+        enum <ubyte> CodecType
+        {
+            CODEC_PCM8,
+            CODEC_PCM16BE,
+            CODEC_NGC_DSP
+        };
+
+        char      magic[4];
+        uint32    section_size                 <comment = "Section size in bytes">;
+        char      unknown1[0x18]               <hidden = true>;
+        CodecType codec_type;
+        ubyte     loop_flag                    <comment = "Whether or not the music should be looped">;
+        ubyte     channel_count;
+        char      unknown2                     <hidden = true>;
+        uint16    sample_rate                  <comment = "Sample rate in hertz">;
+        char      unknown3[2]                  <hidden = true>;
+        uint32    loop_start_sample            <comment = "Sample that looping starts at">;
+        uint32    total_samples;
+        uint32    start_offset;
+        char      unknown4[4]                  <hidden = true>;
+        uint32    interleave_block_size;
+        char      unknown5[12]                 <hidden = true>;
+        uint32    interleave_small_block_size;
+        
+        ubyte  data[section_size - 76];
+    };
+
+    struct ADPCSection
+    {
+        char   magic[4];
+        uint32 section_size <comment = "Section size in bytes">;
+        ubyte  data[section_size - 8]; 
+    };
+
+    struct DATASection
+    {
+        char   magic[4];
+        uint32 section_size <comment = "Section size in bytes">;
+        uint32 unknown      <hidden = true>;
+        char   padding1[14] <hidden = true>;
+        ubyte  data[section_size];
+        char   padding[FileSize() - FTell()];
+    };
+
+    Header header;
+
+    FSeek(header.head_section_offset);
+    HEADSection head_section;
+
+    FSeek(header.adpc_section_offset);
+    ADPCSection adpc_section;
+
+    FSeek(header.data_section_offset);
+    DATASection data_section;
+} brstm;
