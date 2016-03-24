@@ -34,25 +34,25 @@ struct TMD
     SignatureType signature_type;
     ubyte signature[256];
 
-    ubyte padding[60];
+    ubyte padding[60] <hidden = true>;
 
     char  issuer[64];
     ubyte version;
     ubyte ca_crl_version;
     ubyte signer_crl_version;
 
-    ubyte padding2;
+    ubyte padding2 <hidden = true>;
 
     uint64 system_version;
     uint64 title_id;
     uint32 title_type;
     uint16 group_id;
-    ubyte  reserved[62];
+    ubyte  reserved[62] <hidden = true>;
     uint32 access_rights;
     uint16 title_version;
     uint16 num_contents;
     uint16 boot_index;
-    uint16 padding3;
+    uint16 padding3 <hidden = true>;
 
     ContentEntry content_entries[num_contents];
 } tmd;
