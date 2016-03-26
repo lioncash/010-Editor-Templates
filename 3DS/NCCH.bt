@@ -57,3 +57,173 @@ struct NCCH
     ubyte  exefs_superblock_hash[0x20] <comment = "SHA-256 hash">;
     ubyte  romfs_superblock_hash[0x20] <comment = "SHA-256 hash">;
 };
+
+struct NCCHExtendedHeader
+{
+    LittleEndian();
+
+    struct SystemControlInfo
+    {
+        struct CodeSetInfo
+        {
+            uint32 address              <format = hex>;
+            uint32 physical_region_size <comment = "In page-multiples">;
+            uint32 size                 <comment = "In bytes">;
+        };
+
+        struct SystemInfo
+        {
+            uint64 save_data_size;
+            uint64 jump_id;
+            char   reserved[0x30] <hidden = true>;
+        };
+
+        struct DependencyModule
+        {
+            ubyte data[8] <format = binary>;
+        };
+
+        char             application_title[8];
+        ubyte            reserved1[5]            <hidden = true>;
+        ubyte            flag;
+        uint16           remaster_version;
+        CodeSetInfo      text_code_set_info;
+        uint32           stack_size;
+        CodeSetInfo      readonly_code_set_info;
+        char             reserved2[4]            <hidden = true>;
+        CodeSetInfo      data_code_set_info;
+        uint32           bss_size;
+        DependencyModule dependency_module_list[48];
+        SystemInfo       system_info;
+    };
+
+    struct AccessControlInfo
+    {
+        struct ARM11LocalSystemCapabilities
+        {
+            struct Flag0
+            {
+                ubyte ideal_processor : 2;
+                ubyte affinity_mask   : 2;
+                ubyte system_mode     : 4;
+            };
+
+            struct Flag1
+            {
+                ubyte enable_L2_cache  : 1;
+                ubyte cpuspeed_804_mhz : 1;
+                ubyte unused           : 6 <hidden = true>;
+            };
+
+            struct Flag2
+            {
+                ubyte unknown : 4;
+                ubyte unused  : 4;
+            };
+
+            struct StorageInfo
+            {
+                enum <uint64> FileSystemAccessInfo
+                {
+                    FSAI_CATEGORY_SYSTEM_APPLICATION = 0x000001,
+                    FSAI_CATEGORY_HARDWARE_CHECK     = 0x000002,
+                    FSAI_CATEGORY_FILESYSTEM_TOOL    = 0x000004,
+                    FSAI_DEBUG                       = 0x000008,
+                    FSAI_TWL_CARD_BACKUP             = 0x000010,
+                    FSAI_TWL_NAND_DATA               = 0x000020,
+                    FSAI_BOSS                        = 0x000040,
+                    FSAI_SDMC                        = 0x000080,
+                    FSAI_CORE                        = 0x000100,
+                    FSAI_NAND_RO_READ_ONLY           = 0x000200,
+                    FSAI_NAND_RW                     = 0x000400,
+                    FSAI_NAND_RO_WRITE_ACCESS        = 0x000800,
+                    FSAI_CATEGORY_SYSTEM_SETTINGS    = 0x001000,
+                    FSAI_CARD_BOARD                  = 0x002000,
+                    FSAI_EXPORT_IMPORT_IVS           = 0x004000,
+                    FSAI_SDMC_WRITE_ONLY             = 0x008000,
+                    FSAI_SWITCH_CLEANUP              = 0x010000,
+                    FSAI_SAVE_DATA_MOVE              = 0x020000,
+                    FSAI_SHOP                        = 0x040000,
+                    FSAI_SHELL                       = 0x080000,
+                    FSAI_CATEGORY_HOME_MENU          = 0x100000,
+                    FSAI_UNKNOWN                     = 0x200000
+                };
+
+                enum <uint64> OtherAttributes
+                {
+                    OA_DONT_USE_ROMFS                = 0x1,
+                    OA_USE_EXTENDED_SAVE_DATA_ACCESS = 0x2
+                };
+
+                uint64               exdata_id;
+                uint64               system_save_data_ids;
+                uint64               storage_accessable_unique_ids;
+                FileSystemAccessInfo file_system_access_info : 56;
+                OtherAttributes      other_attributes        : 8;
+            };
+
+            struct ResourceLimitDescriptor
+            {
+                uint16 data <format = binary>;
+            };
+
+            struct ServiceEntry
+            {
+                char name[8];
+            };
+
+            enum <ubyte> ResourceLimitCategory
+            {
+                RLC_APPLICATION = 0,
+                RLC_SYS_APPLET  = 1,
+                RLC_LIB_APPLET  = 2,
+                RLC_OTHER       = 3
+            };
+
+            uint64 program_id;
+            uint32 core_version;
+            Flag1  flag1;
+            Flag2  flag2;
+            Flag0  flag0;
+            ubyte  priority;
+            ResourceLimitDescriptor resource_limit_descriptors[16];
+            StorageInfo             storage_info;
+            ServiceEntry            service_access_control[32];
+            ServiceEntry            extended_service_access_control[2];
+            char                    reserved[0xF] <hidden = true>;
+            ResourceLimitCategory   resource_limit_category;
+        };
+
+        struct ARM11KernelCapabilities
+        {
+            uint32 descriptors[28] <format = binary>;
+            ubyte  reserved[0x10]  <hidden = true>;
+        };
+
+        struct ARM9AccessControl
+        {
+            ubyte mount_nand     : 1     <name = "Mount nand:/">;
+            ubyte mount_nand_ro  : 1     <name = "Mount nand:/ro/">;
+            ubyte mount_twin     : 1     <name = "Mount twin:/">;
+            ubyte mount_wnand    : 1     <name = "Mount wnand:/">;
+            ubyte mount_card_spi : 1     <name = "Mount Card SPI">;
+            ubyte use_sdif3      : 1     <name = "Use SDIF3">;
+            ubyte create_seed    : 1     <name = "Create Seed">;
+            ubyte use_card_spi   : 1     <name = "Use Card SPI">;
+            ubyte sd_application : 1     <name = "SD Application">;
+            ubyte mount_sdmc     : 1     <name = "Mount sdmc:/ (Write Access)">;
+            ubyte other_descriptors[0xD] <name = "Other descriptors that don\'t have known bits">;
+            ubyte descriptor_version     <name = "Descriptor Version">;
+        };
+
+        ARM11LocalSystemCapabilities arm11_local_system_capabilities;
+        ARM11KernelCapabilities      arm11_kernel_capabilities;
+        ARM9AccessControl            arm9_access_control;
+    };
+
+    SystemControlInfo system_control_info;
+    AccessControlInfo access_control_info;
+    ubyte             access_desc_signature[0x100]  <comment = "RSA-2048-SHA256">;
+    ubyte             ncch_header_public_key[0x100] <comment = "RSA-2048">;
+    AccessControlInfo extended_access_control_info;
+};
