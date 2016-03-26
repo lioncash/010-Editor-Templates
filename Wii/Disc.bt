@@ -1,0 +1,101 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the layout of a Wii disc
+//--------------------------------------
+
+// Wii partition addresses are shifted right by two places on the disc.
+uint32 NormalizePartitionValue(uint32 value)
+{
+    return value << 2;
+}
+
+string FormatShiftedPartitionAddresses(uint32 value)
+{
+    string result;
+    SPrintf(result, "0x%08X", NormalizePartitionValue(value));
+    return result;
+}
+
+const uint32 PARTITION_INFO_OFFSET = 0x40000;
+
+struct Disc
+{
+    BigEndian();
+
+    struct Header
+    {
+        char   id                          <name = "Disc ID">;
+        char   game_code[2]                <name = "Game Code">;
+        char   region_code                 <name = "Region Code">;
+        char   maker_code[2]               <name = "Maker Code">;
+        ubyte  disc_number                 <name = "Disc Number">;
+        ubyte  disc_version                <name = "Disc Version">;
+        ubyte  audio_streaming             <name = "Audio Streaming">;
+        ubyte  audio_streaming_buffer_size <name = "Audio Streaming Buffer Size">;
+        ubyte  unknown[14]                 <hidden = true>;
+        uint32 wii_magic_word              <name = "Wii Magic Word", format = hex, comment = "Identifies the disc as a Wii disc">;
+        uint32 gc_magic_word               <name = "GC Magic Word",  format = hex, comment = "Identifies the disc as a GC disc">;
+        char   game_title[64]              <name = "Game Title">;
+        ubyte  disable_hash_verification   <name = "Disabled Hash Verification">;
+        ubyte  disable_crypt_and_h3        <name = "Disabled disc encryption and H3 hash table loading">;
+        ubyte  padding[380]                <hidden = true>;
+    };
+
+    struct PartitionInfo
+    {
+        uint32 total_primary_partitions               <name = "Total Primary Partitions">;
+        uint32 primary_partition_info_table_offset    <name = "Primary Partition Info Table Offset",    read = FormatShiftedPartitionAddresses>;
+
+        uint32 total_secondary_partitions             <name = "Total Secondary Partitions">;
+        uint32 secondary_partition_info_table_offset  <name = "Secondary Partition Info Table Offset",  read = FormatShiftedPartitionAddresses>;
+
+        uint32 total_tertiary_partitions              <name = "Total Tertiary Partitions">;
+        uint32 tertiary_partition_info_table_offset   <name = "Tertiary Partition Info Table Offset",   read = FormatShiftedPartitionAddresses>;
+
+        uint32 total_quaternary_partitions            <name = "Total Quaternary Partitions">;
+        uint32 quaternary_partition_info_table_offset <name = "Quaternary Partition Info Table Offset", read = FormatShiftedPartitionAddresses>;
+    };
+
+    struct PartitionTableEntry
+    {
+        enum PartitionType
+        {
+            TYPE_DATA              = 0,
+            TYPE_UPDATE            = 1,
+            TYPE_CHANNEL_INSTALLER = 2
+        };
+
+        uint32        partition_offset <name = "Partition Offset", read = FormatShiftedPartitionAddresses>;
+        PartitionType partition_type   <name = "Partition Type">;
+    };
+
+    Header header <name = "Header">;
+
+    FSeek(PARTITION_INFO_OFFSET);
+
+    PartitionInfo partition_info <name = "Partition Info", comment = "This indicates where all four partition types are located">;
+
+    if (partition_info.total_primary_partitions > 0) {
+        FSeek(NormalizePartitionValue(partition_info.primary_partition_info_table_offset));
+        PartitionTableEntry primary_partition_info[partition_info.total_primary_partitions] <name = "Primary Partition Info">;
+    }
+    if (partition_info.total_secondary_partitions > 0) {
+        FSeek(NormalizePartitionValue(partition_info.secondary_partition_info_table_offset));
+        PartitionTableEntry secondary_partition_info[partition_info.total_secondary_partitions] <name = "Secondary Partition Info">;
+    }
+    if (partition_info.total_tertiary_partitions > 0) {
+        FSeek(NormalizePartitionValue(partition_info.tertiary_partition_info_table_offset));
+        PartitionTableEntry tertiary_partition_info[partition_info.total_tertiary_partitions] <name = "Tertiary Partition Info">;
+    }
+    if (partition_info.total_quaternary_partitions > 0) {
+        FSeek(NormalizePartitionValue(partition_info.quaternary_partition_info_table_offset));
+        PartitionTableEntry quaternary_partition_info[partition_info.total_quaternary_partitions] <name = "Quaternary Partition Info">;
+    }
+
+    // TODO: Display the partitions themselves.
+    //       This is kind of a PITA with how 010 supports variable declarations.
+
+} disc;
