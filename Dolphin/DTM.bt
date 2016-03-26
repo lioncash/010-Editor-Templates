@@ -1,0 +1,75 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the layout of a Dolphin Emulator TAS movie file
+//--------------------------------------
+
+// TODO: Displaying the controller data would also be helpful.
+
+struct DTM
+{
+    LittleEndian();
+
+    enum <ubyte> CPUCore
+    {
+        CORE_INTERPRETER       = 0,
+        CORE_JIT64             = 1,
+        CORE_JITIL             = 2,
+        CORE_JITARM64          = 4,
+        CORE_CACHEDINTERPRETER = 5,
+    };
+
+    char   magic[4]              <name = "Magic">;
+    char   game_id[6]            <name = "Game ID">;
+    ubyte  is_wii_game           <name = "Is Wii Game">;
+    ubyte  num_controllers       <name = "Number of Controllers">;
+    ubyte  starts_from_savestate <name = "Starts From Savestate">;
+    uint64 frame_count           <name = "Frame Count">;
+    uint64 input_frames          <name = "Input Frames">;
+    uint64 lag_frames            <name = "Lag Frames">;
+    uint64 unique_id             <hidden = true>; // This isn't implemented.
+    uint32 rerecord_count        <name = "Rerecord Count">;
+    char   author[32]            <name = "Author">;
+    char   video_backend[16]     <name = "Video Backend">;
+    char   audio_emulator[16]    <name = "Audio Emulator">;
+    ubyte  md5[16]               <name = "MD5">;
+    uint64 recording_start_time  <name = "Recording Start Time", comment = "Seconds since 1970">;
+
+    ubyte  using_saved_config    <name = "Using Saved Config", comment = "Additional values will show up when this is true.">;
+
+    if (using_saved_config == 1)
+    {
+        ubyte   idle_skip       <name = "Idle Skip">;
+        ubyte   dual_core       <name = "Dual Core">;
+        ubyte   progressive     <name = "Progressive Scan">;
+        ubyte   dsp_hle         <name = "DSP HLE">;
+        ubyte   fast_disc_speed <name = "Fast Disc Speed">;
+        CPUCore cpu_core        <name = "CPU Core">;
+        ubyte   efb_access      <name = "EFB Access">;
+        ubyte   efb_copies      <name = "EFB Copies">;
+        ubyte   efb_copy_to_tex <name = "Copy EFBs To Texture", comment = "If zero, then this movie copies to RAM">;
+        ubyte   efb_copy_cache  <name = "EFB Copy Cache">;
+        ubyte   format_changes  <name = "Emulate Format Changes">;
+        ubyte   emulate_xfb     <name = "Emulate XFB">;
+        ubyte   real_xfb        <name = "Use Real XFB">;
+        ubyte   memcard_present <name = "Memory Card Present">;
+        ubyte   memcard_blank   <name = "Memory Card Was Blank">;
+        ubyte   num_bongos      <name = "Number of Bongos">;
+        ubyte   sync_gpu        <name = "Sync GPU Thread">;
+        ubyte   netplay         <name = "Netplay Enabled">;
+        ubyte   pal60           <name = "PAL60 Mode">;
+        ubyte   reserved1[12]   <hidden = true>;
+        char    second_disc[40] <name = "Name of Second Disc", comment = "This only applies for two-disc games">;
+        uint32  git_sha1        <name = "SHA-1 of Git Revision">;
+        uint32  dsp_irom_hash   <name = "DSP IROM Hash">;
+        uint32  dsp_coef_hash   <name = "DSP COEF Hash">;
+        uint64  tick_count      <name = "Tick Count">;
+        ubyte   reserved2[11]   <hidden = true>;
+    }
+    else
+    {
+        ubyte ignore[102]       <hidden = true>;
+    }
+} dtm;
