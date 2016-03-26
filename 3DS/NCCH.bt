@@ -23,6 +23,8 @@ string MediaUnitsToBytesString(uint32 value)
 
 struct NCCH
 {
+    LittleEndian();
+
     ubyte  rsa_signature[0x100] <comment = "RSA-2048 signature, using SHA-256">;
     char   magic[4];
     uint32 content_size <read = MediaUnitsToBytesString>;
