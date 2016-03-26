@@ -1,0 +1,57 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the data structure for NCCH headers.
+//--------------------------------------
+
+uint32 MediaUnitsToBytes(uint32 value)
+{
+    return value * 0x200;
+}
+
+string MediaUnitsToBytesString(uint32 value)
+{
+    string result;
+
+    SPrintf(result, "0x%08X", MediaUnitsToBytes(value));
+
+    return result;
+}
+
+
+struct NCCH
+{
+    ubyte  rsa_signature[0x100] <comment = "RSA-2048 signature, using SHA-256">;
+    char   magic[4];
+    uint32 content_size <read = MediaUnitsToBytesString>;
+    uint64 partition_id;
+    uint16 maker_code;
+    uint16 version;
+    uint32 content_lock_seed_verification_hash;
+    uint64 program_id;
+    char   reserved1[0x10]             <hidden = true>;
+    ubyte  logo_region_hash[0x20]      <comment = "SHA-256 hash">;
+    char   product_code[0x10];
+    ubyte  extended_header_hash[0x20]  <comment = "SHA-256 hash">;
+    uint32 extended_header_size        <comment = "In bytes">;
+    char   reserved2[4]                <hidden = true>;
+
+    // TODO: Format output for this to indicate flag purposes.
+    uint64 flags                       <format  = binary>;
+    uint32 plain_region_offset         <read    = MediaUnitsToBytesString>;
+    uint32 plain_region_size           <read    = MediaUnitsToBytesString>;
+    uint32 logo_region_offset          <read    = MediaUnitsToBytesString>;
+    uint32 logo_region_size            <read    = MediaUnitsToBytesString>;
+    uint32 exefs_offset                <read    = MediaUnitsToBytesString>;
+    uint32 exefs_size                  <read    = MediaUnitsToBytesString>;
+    uint32 exefs_hash_region_size      <read    = MediaUnitsToBytesString>;
+    char   reserved3[4]                <hidden  = true>;
+    uint32 romfs_offset                <read    = MediaUnitsToBytesString>;
+    uint32 romfs_size                  <read    = MediaUnitsToBytesString>;
+    uint32 romfs_hash_region_size      <read    = MediaUnitsToBytesString>;
+    char   reserved4[4]                <hidden  = true>;
+    ubyte  exefs_superblock_hash[0x20] <comment = "SHA-256 hash">;
+    ubyte  romfs_superblock_hash[0x20] <comment = "SHA-256 hash">;
+};
