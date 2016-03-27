@@ -1,0 +1,37 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the basic structure of a THP movie file.
+//--------------------------------------
+
+struct THP
+{
+    BigEndian();
+
+    struct Header
+    {
+        char   magic[4]              <name = "Magic">;
+        uint32 version               <name = "Version">;
+        uint32 max_buffer_size       <name = "Maximum buffer size", comment = "Maximal size needed to complete one frame">;
+        uint32 max_audio_samples     <name = "Maximum audio samples", comment = "Maximal number of audio samples possible in one frame">;
+
+        float  fps                   <name = "Frames-per-second">;
+        uint32 num_frames            <name = "Number of frames">;
+        uint32 first_frame_size      <name = "First frame size">;
+
+        uint32 data_size             <name = "Data size", comment = "Size of all frames">;
+
+        uint32 component_data_offset <name = "Component data offset", format = hex>;
+        uint32 unknown               <hidden = true>;
+
+        uint32 first_frame_offset    <name = "First frame offset", format = hex>;
+        uint32 last_frame_offset     <name = "Last frame offset", format = hex>;
+    };
+
+    Header header <name = "Header">;
+
+    FSeek(header.first_frame_offset);
+    ubyte data[header.data_size] <name = "Data">;
+} thp;
