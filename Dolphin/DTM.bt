@@ -62,7 +62,7 @@ struct DTM
         ubyte   pal60           <name = "PAL60 Mode">;
         ubyte   reserved1[12]   <hidden = true>;
         char    second_disc[40] <name = "Name of Second Disc", comment = "This only applies for two-disc games">;
-        uint32  git_sha1        <name = "SHA-1 of Git Revision">;
+        ubyte   git_sha1[20]    <name = "SHA-1 of Git Revision">;
         uint32  dsp_irom_hash   <name = "DSP IROM Hash">;
         uint32  dsp_coef_hash   <name = "DSP COEF Hash">;
         uint64  tick_count      <name = "Tick Count">;
@@ -70,6 +70,6 @@ struct DTM
     }
     else
     {
-        ubyte ignore[102]       <hidden = true>;
+        ubyte ignore[118]       <hidden = true>;
     }
 } dtm;
