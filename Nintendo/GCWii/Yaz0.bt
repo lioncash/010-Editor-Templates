@@ -1,0 +1,16 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the header Yaz0 compressed file.
+//--------------------------------------
+
+typedef struct
+{
+    BigEndian();
+
+    char   magic[4]          <name = "Magic">;
+    uint32 uncompressed_size <name = "Uncompressed size", comment = "In bytes">;
+    ubyte  padding[8]        <hidden = true>;
+} Yaz0 <size = 16>;
