@@ -1,0 +1,99 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the layout of a Dolphin Emulator DFF FifoPlayer file
+//--------------------------------------
+
+struct DFF
+{
+    LittleEndian();
+
+    union Header
+    {
+        struct
+        {
+            uint32 file_id            <name = "File ID", format = hex>;
+            uint32 file_version       <name = "File Version">;
+            uint32 min_loader_version <name = "Minimum Loader Version">;
+            uint64 bp_mem_offset      <name = "BP Memory Offset">;
+            uint32 bp_mem_size        <name = "BP Memory Size">;
+            uint64 cp_mem_offset      <name = "CP Memory Offset">;
+            uint32 cp_mem_size        <name = "CP Memory Size">;
+            uint64 xf_mem_offset      <name = "XF Memory Offset">;
+            uint32 xf_mem_size        <name = "XF Memory Size">;
+            uint64 xf_regs_offset     <name = "XF Registers Offset">;
+            uint32 xf_regs_size       <name = "XF Registers Size">;
+            uint64 frame_list_offset  <name = "Frame List Offset">;
+            uint32 frame_count        <name = "Frame Count">;
+            uint32 flags              <name = "Flags", comment = "As of writing, this will be 1 if it's a Wii game">;
+        } data <name = "Data">;
+
+        uint32 raw_data[32] <name = "Raw Data", comment = "Raw array of data">;
+    };
+
+    struct FileMemoryUpdate
+    {
+        enum <ubyte> UpdateType
+        {
+            TYPE_TEXTURE_MAP   = 0x01,
+            TYPE_XF_DATA       = 0x02,
+            TYPE_VERTEX_STREAM = 0x04,
+            TYPE_TMEM          = 0x08
+        };
+
+        uint32     fifo_position <name = "FIFO Position">;
+        uint32     address       <name = "Address", format = hex>;
+        uint64     data_offset   <name = "Data Offset">;
+        uint32     data_size     <name = "Data Size">;
+        UpdateType type          <name = "Type">;
+    };
+
+    union FileFrameInfo
+    {
+        struct
+        {
+            uint64 fifo_data_offset  <name = "FIFO Data Offset">;
+            uint32 fifo_data_size    <name = "FIFO Data Size">;
+            uint32 fifo_start        <name = "FIFO Start">;
+            uint32 fifo_end          <name = "FIFO End">;
+            uint64 mem_update_offset <name = "Memory Updates Offset">;
+            uint32 mem_update_count  <name = "Number of Memory Updates">;
+
+            local int64 current_pos = FTell();
+    
+            FSeek(fifo_data_offset);
+            ubyte fifo_data[fifo_data_size] <name = "FIFO Data", comment = "Not actually part of the struct">;
+    
+            if (mem_update_count > 0)
+            {
+                FSeek(mem_update_offset);
+                FileMemoryUpdate mem_updates[mem_update_count] <name = "Memory Updates", comment = "Not actually part of the struct">;
+            }
+    
+            // Seek back to original offset
+            FSeek(current_pos);
+        } data <name = "Data">;
+
+        uint32 raw_data[16] <name = "Raw Data", comment = "Raw array of data">;
+    };
+
+    Header header <name = "Header">;
+
+    FSeek(header.data.bp_mem_offset);
+    ubyte bp_memory[header.data.bp_mem_size] <name = "BP Memory">;
+
+    FSeek(header.data.cp_mem_offset);
+    ubyte cp_memory[header.data.cp_mem_size] <name = "CP Memory">;
+
+    FSeek(header.data.xf_mem_offset);
+    ubyte xf_memory[header.data.xf_mem_size] <name = "XF Memory">;
+
+    FSeek(header.data.xf_regs_offset);
+    ubyte xf_regs[header.data.xf_regs_size]  <name = "XF Register Data">;
+
+    FSeek(header.data.frame_list_offset);
+    FileFrameInfo frame_list[header.data.frame_count] <name = "Frame List", optimize = false>;
+
+} dff;
