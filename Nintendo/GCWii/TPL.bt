@@ -1,0 +1,108 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// Author  : Lioncash
+// Revision: 1.0
+// Purpose : Defines the data structure of TPL image containers.
+//--------------------------------------
+
+struct TPL
+{
+    BigEndian();
+
+    struct Header
+    {
+        uint32 identifier         <name = "Identifier", format = hex>;
+        uint32 num_images         <name = "Number of images">;
+        uint32 image_table_offset <name = "Image table offset", format = hex, comment = "Relative to beginning of file">;
+    };
+
+    struct ImageHeader
+    {
+        enum <uint32> ImageFormat
+        {
+            IFMT_I4     = 0,
+            IFMT_I8     = 1,
+            IFMT_IA4    = 2,
+            IFMT_IA8    = 3,
+            IFMT_RGB565 = 4,
+            IFMT_RGB5A3 = 5,
+            IFMT_RGBA32 = 6,
+            IFMT_C4     = 8,
+            IFMT_C8     = 9,
+            IFMT_C14X2  = 10,
+            IFMT_CMPR   = 14
+        };
+
+        enum <uint32> Filter
+        {
+            FILT_NEAR                 = 0, // Point sampling, no mipmap
+            FILT_LINEAR               = 1, // Bilinear filtering, no mipmap
+            FILT_NEAR_MIPMAP_NEAR     = 2, // Point sampling, discrete mipmap 
+            FILT_LINEAR_MIPMAP_NEAR   = 3, // Bilinear filtering, discrete mipmap 
+            FILT_NEAR_MIPMAP_LINEAR   = 4, // Point sampling, linear mipmap 
+            FILT_LINEAR_MIPMAP_LINEAR = 5, // Trilinear filtering 
+        };
+
+        uint16      height          <name = "Height">;
+        uint16      width           <name = "Width">;
+        ImageFormat format          <name = "Image Format">;
+        uint32      data_offset     <name = "Image data offset", format = hex, comment = "Relative to beginning of file">;
+        uint32      wrap_s          <name = "Wrap S">;
+        uint32      wrap_t          <name = "Wrap T">;
+        Filter      min_filter      <name = "Minification filter">;
+        Filter      mag_filter      <name = "Magnification filter">;
+        float       lod_bias        <name = "LOD bias">;
+        ubyte       edge_lod_enable <name = "Edge LOD enable">;
+        ubyte       min_lod         <name = "Minimum LOD">;
+        ubyte       max_lod         <name = "Maximum LOD">;
+        ubyte       unpacked        <name = "Is unpacked">;   
+    };
+
+    struct PaletteHeader
+    {
+        enum <uint32> PaletteFormat
+        {
+            PFMT_IA8    = 0,
+            PFMT_RGB565 = 1,
+            PFMT_RGB5A3 = 2
+        };
+
+        uint16        num_entries <name = "Number of entries">;
+        ubyte         unpacked    <name = "Is unpacked">;
+        ubyte         padding     <hidden = true>;
+        PaletteFormat format      <name = "Palette format">;
+        uint32        data_offset <name = "Palette data offset", format = hex, comment = "Relative to beginning of file">;
+    };
+
+    struct ImageOffsetTableEntry
+    {
+        uint32 image_header_offset;
+        uint32 palette_header_offset;
+    };
+
+    struct Image(ImageOffsetTableEntry& entry)
+    {
+        FSeek(entry.image_header_offset);
+        ImageHeader image_header <name = "Image header">;
+
+        if (entry.palette_header_offset != 0)
+        {
+            FSeek(entry.palette_header_offset);
+            PaletteHeader palette_header <name = "Palette Header">;
+        }
+    };
+
+    Header header <name = "Header">;
+
+    FSeek(header.image_table_offset);
+    ImageOffsetTableEntry image_offset_table[header.num_images] <name = "Image offset table">;
+
+    local uint32 i = 0;
+    for (i = 0; i < header.num_images; i++)
+    {
+        Image image(image_offset_table[i]) <name = "Image">;
+    }
+
+
+} tpl;
