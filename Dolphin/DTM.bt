@@ -7,6 +7,44 @@
 //--------------------------------------
 
 // TODO: Displaying the controller data would also be helpful.
+//       Currently only the structs are provided, but not hooked up.
+
+struct GameCubeInputData
+{
+    ubyte start       : 1 <name = "Start Button">;
+    ubyte a           : 1 <name = "A Button">;
+    ubyte b           : 1 <name = "B Button">;
+    ubyte x           : 1 <name = "X Button">;
+    ubyte y           : 1 <name = "Y Button">;
+    ubyte z           : 1 <name = "Z Button">;
+
+    ubyte dpad_up     : 1 <name = "D-Pad Up">;
+    ubyte dpad_down   : 1 <name = "D-Pad Down">;
+    ubyte dpad_left   : 1 <name = "D-Pad Left">;
+    ubyte dpad_right  : 1 <name = "D-Pad Right">;
+
+    ubyte l           : 1 <name = "L Trigger">;
+    ubyte r           : 1 <name = "R Trigger">;
+
+    ubyte disc_change : 1 <name = "Disc Changed">;
+    ubyte reset       : 1 <name = "Reset Button">;
+    ubyte reserved    : 2 <hidden = true>;
+
+    ubyte l_pressure      <name = "L Trigger Analog", comment = "0: None | 255: Max">;
+    ubyte r_pressure      <name = "R Trigger Analog", comment = "0: None | 255: Max">;
+
+    ubyte analog_stick_x  <name = "Analog Stick X", comment = "Ranges from 1 to 255">;
+    ubyte analog_stick_y  <name = "Analog Stick Y", comment = "Ranges from 1 to 255">;
+
+    ubyte c_stick_x       <name = "C Stick X", comment = "Ranges from 1 to 255">;
+    ubyte c_stick_y       <name = "C Stick Y", comment = "Ranges from 1 to 255">;
+};
+
+struct WiimoteControllerData
+{
+    ubyte payload_size          <name = "Payload Size">;
+    ubyte payload[payload_size] <name = "Payload", comment = "Raw Wiimote data">;
+};
 
 struct DTM
 {
